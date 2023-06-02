@@ -4,8 +4,9 @@
  */
 package com.senac.drogarara.gui;
 
-
+import com.senac.drogarara.DAO.ProdutoDAO;
 import com.senac.drogarara.conexao.Conexao;
+import com.senac.drogarara.model.Produto;
 import javax.swing.JOptionPane;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 /**
  *
  * @author david
@@ -25,6 +27,7 @@ public class CadastroProdutoView extends javax.swing.JFrame {
      */
     public CadastroProdutoView() {
         initComponents();
+        setResizable(false);
     }
 
     /**
@@ -169,68 +172,54 @@ public class CadastroProdutoView extends javax.swing.JFrame {
     private void btnSalvarProdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarProdActionPerformed
         // TODO add your handling code here:
         // METODO PARA ADICIONAR NOVO PRODUTO
-        
+
         String nomeProd = txtNomeProd.getText();
         String descProd = txtDescProd.getText();
         String catProd = cbCategoria.getSelectedItem().toString();
-        
+
         boolean erro = false;
-        
-        if(txtDescProd.getText().isEmpty() || txtNomeProd.getText().isEmpty() || txtQtdProd.getText().isEmpty() || txtValorProd.getText().isEmpty()){
+
+        if (txtDescProd.getText().isEmpty() || txtNomeProd.getText().isEmpty() || txtQtdProd.getText().isEmpty() || txtValorProd.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Valores nulos no formulário, por favor revise", "Title", JOptionPane.ERROR_MESSAGE);
             erro = true;
         }
-        
-        if(erro == false){
-            
-            try{
-            int qtdProd = Integer.parseInt(txtQtdProd.getText());
-            double valorProd = Double.valueOf(txtValorProd.getText());
-                                   
-                        //ESTRUTURA COM O BANCO
-                try (Connection con = Conexao.getConexao();
-                     PreparedStatement stm = con.prepareStatement("INSERT INTO Produto(nome, quantidade_estoque, categoria, valor, descricao) VALUES (?, ?, ?, ?, ?)")) {
 
-                    stm.setString(1, nomeProd);
-                    stm.setInt(2, qtdProd);
-                    stm.setString(3, catProd);
-                    stm.setDouble(4, valorProd);
-                    stm.setString(5, descProd);
+        if (erro == false) {
 
-                    int rowsAffected = stm.executeUpdate();
+            try {
+                int qtdProd = Integer.parseInt(txtQtdProd.getText());
+                double valorProd = Double.valueOf(txtValorProd.getText());
 
-                    if (rowsAffected > 0) {
-                        JOptionPane.showMessageDialog(this, "Produto cadastrado com sucesso");
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Erro ao cadastrar cliente");
-                    }
-                } catch (SQLException ex) {
-                    Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-                    JOptionPane.showMessageDialog(this, "Erro ao conectar ao banco de dados!");
-                }
-                                              
-        }catch(NumberFormatException npe){
-            JOptionPane.showMessageDialog(this, "Apenas valores numericos são aceitos na quantidade e valor do produto", "Title", JOptionPane.ERROR_MESSAGE);
-            erro = true;
+                /*Alteração para criação do objeto Produto*/
+                Produto produto = new Produto();
+
+                produto.setNome(nomeProd);
+                produto.setQtdEstoque(qtdProd);
+                produto.setCategoria(catProd);
+                produto.setValor(valorProd);
+                produto.setDescricao(descProd);
+
+                ProdutoDAO.cadastroProduto(produto);
+
+            } catch (NumberFormatException npe) {
+                JOptionPane.showMessageDialog(this, "Apenas valores numericos são aceitos na quantidade e valor do produto", "Title", JOptionPane.ERROR_MESSAGE);
+                erro = true;
+            }
+
+            if (erro == true) {
+                JOptionPane.showMessageDialog(this, "Revise os valores do formulário", "Title", JOptionPane.ERROR_MESSAGE);
+            }
+
         }
-        
-        if(erro == true){
-            JOptionPane.showMessageDialog(this, "Revise os valores do formulário", "Title", JOptionPane.ERROR_MESSAGE);
-        }
-        
-      }
-                
-        
-        
     }//GEN-LAST:event_btnSalvarProdActionPerformed
 
     private void btnVoltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoltarActionPerformed
-                // TODO add your handling code here:
-                ProdutoFormView pfv = new ProdutoFormView();
-                
-                this.setVisible(false);
-                
-                pfv.setVisible(true);
+        // TODO add your handling code here:
+        ProdutoFormView pfv = new ProdutoFormView();
+
+        this.setVisible(false);
+
+        pfv.setVisible(true);
     }//GEN-LAST:event_btnVoltarActionPerformed
 
     /**

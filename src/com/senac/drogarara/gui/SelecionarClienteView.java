@@ -5,12 +5,16 @@
 package com.senac.drogarara.gui;
 
 import com.senac.drogarara.conexao.Conexao;
+import com.senac.drogarara.DAO.ClienteDAO;
+import com.senac.drogarara.model.Cliente;
 import javax.swing.JOptionPane;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.List;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -31,6 +35,7 @@ public class SelecionarClienteView extends javax.swing.JFrame {
     public SelecionarClienteView(GerarVendaView gerarVendaView) {
         this.gerarVendaView = gerarVendaView;
         initComponents();
+        setResizable(false);
     }
 
     private SelecionarClienteView() {
@@ -121,13 +126,13 @@ public class SelecionarClienteView extends javax.swing.JFrame {
 
         tListaClienteSelecionado.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "ID", "Nome", "CPF", "Endereço", "Telefone"
             }
         ));
         jScrollPane2.setViewportView(tListaClienteSelecionado);
@@ -227,7 +232,7 @@ public class SelecionarClienteView extends javax.swing.JFrame {
             ResultSet rs = stm.executeQuery();
 
             // Criar um objeto DefaultTableModel para armazenar os dados do JTable
-            DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "Endereço", "Telefone", "Email"}, 0);
+            DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "Endereço", "Telefone"}, 0);
 
             // Preencher o modelo com os dados da consulta
             while (rs.next()) {
@@ -236,9 +241,8 @@ public class SelecionarClienteView extends javax.swing.JFrame {
                 long cpf = rs.getLong("cpf");
                 String endereco = rs.getString("endereco");
                 String telefone = rs.getString("telefone");
-                String email = rs.getString("email");
 
-                Object[] row = new Object[]{id, nome, cpf, endereco, telefone, email};
+                Object[] row = new Object[]{id, nome, cpf, endereco, telefone};
                 model.addRow(row);
             }
 
@@ -260,18 +264,25 @@ public class SelecionarClienteView extends javax.swing.JFrame {
         // TODO add your handling code here:
         // TODO add your handling code here:
         // TODO add your handling code here:
-//        try {
-//
-//            long cpf = Long.parseLong(txtConsCpfCliente.getText());
-//
-//        } catch (NumberFormatException ex) {
-//            JOptionPane.showMessageDialog(this, "No campo CPF , devem ser inseridos somente numeros");
-//        }
-
         boolean erro = false;
 
         if (!txtConsNmCliente.getText().isEmpty()) {
+            List<Cliente> clienteList = new ArrayList<>();
             String nomeCliente = txtConsNmCliente.getText();
+            DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "Endereço", "Telefone"}, 0);
+            
+            
+            clienteList = ClienteDAO.consClienteNome(nomeCliente);
+            
+            //Para cada cliente retornado
+            clienteList.forEach(cliente ->{
+                Object[] row = new Object[]{cliente.getIdCliente(), cliente.getNome(), cliente.getCpf(), cliente.getEndereco(), cliente.getTelefone()};
+                //Adiciono a tabela modelo
+                model.addRow(row);
+            
+            });
+            
+            tListaClienteSelecionado.setModel(model);
         } else {
             erro = true;
             JOptionPane.showMessageDialog(this, "O nome do cliente está em branco", "Title", JOptionPane.ERROR_MESSAGE);
@@ -281,7 +292,7 @@ public class SelecionarClienteView extends javax.swing.JFrame {
             //ESTRUTURA COM O BANCO
             try (Connection con = Conexao.getConexao(); PreparedStatement stm = con.prepareStatement("SELECT id_cliente, nome, cpf, endereco, telefone, email FROM Cliente WHERE nome LIKE ?")) {
                 stm.setString(1, txtConsNmCliente.getText());
-
+  
                 // Executar a consulta SQL e obter os resultados
                 ResultSet rs = stm.executeQuery();
 
@@ -382,16 +393,12 @@ public class SelecionarClienteView extends javax.swing.JFrame {
     private javax.swing.JButton btnConsClienteCPF;
     private javax.swing.JButton btnConsNmCliente;
     private javax.swing.JButton btnVoltar;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTable tListaClienteSelecionado;
     private javax.swing.JTextField txtConsCpfCliente;
     private javax.swing.JTextField txtConsNmCliente;

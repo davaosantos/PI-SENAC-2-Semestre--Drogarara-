@@ -30,6 +30,7 @@ public class SelecionarProdutoView extends javax.swing.JFrame {
     public SelecionarProdutoView(GerarVendaView gerarVendaView) {
         this.gerarVendaView = gerarVendaView;
         initComponents();
+        setResizable(false);
     }
     
     public SelecionarProdutoView() {

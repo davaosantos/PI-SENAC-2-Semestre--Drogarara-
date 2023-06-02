@@ -5,20 +5,48 @@
 package com.senac.drogarara.gui;
 
 
+import com.senac.drogarara.DAO.VendaDAO;
+import com.senac.drogarara.model.Venda;
+import com.senac.drogarara.model.VendaProduto;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
 
 /**
  *
  * @author david
  */
 public class GerarVendaView extends javax.swing.JFrame {
+    
+     private DefaultTableModel model;
 
-    /**
-     * Creates new form GerarVendaView
-     */
     public GerarVendaView() {
         initComponents();
+        setResizable(false);
+        model = new DefaultTableModel();
+        model.addColumn("ID Produto");
+        model.addColumn("Produto");
+        model.addColumn("Quantidade");
+        model.addColumn("Valor Unitário");
+        model.addColumn("Valor Total");
+        tProdutosVenda.setModel(model);
     }
+
+                                                     
+
+    private void calcularValorTotal() {
+        double valorTotal = 0;
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            double valor = (double) model.getValueAt(i, 4);
+            valorTotal += valor;
+        }
+
+        txtValorTotal.setText(Double.toString(valorTotal));
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -41,7 +69,7 @@ public class GerarVendaView extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tProdutosVenda = new javax.swing.JTable();
-        jButton3 = new javax.swing.JButton();
+        btnExcluirProd = new javax.swing.JButton();
         btnAddProduto = new javax.swing.JButton();
         txtCodProd = new javax.swing.JTextField();
         txtValorProd = new javax.swing.JTextField();
@@ -52,10 +80,10 @@ public class GerarVendaView extends javax.swing.JFrame {
         btnAdicionarProdVenda = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
         txtQtdProd = new javax.swing.JTextField();
-        jButton4 = new javax.swing.JButton();
+        btnGerarVenda = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        txtValorTotal = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -101,21 +129,21 @@ public class GerarVendaView extends javax.swing.JFrame {
 
         tProdutosVenda.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Código", "Quantidade", "Valor"
+                "ID Produto", "Produto", "Quantidade", "Valor Unitário", "Valor Total"
             }
         ));
         jScrollPane1.setViewportView(tProdutosVenda);
 
-        jButton3.setIcon(new javax.swing.ImageIcon("/home/david/Vídeos/btnDeleteSmall.png")); // NOI18N
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        btnExcluirProd.setIcon(new javax.swing.ImageIcon("/home/david/Vídeos/btnDeleteSmall.png")); // NOI18N
+        btnExcluirProd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                btnExcluirProdActionPerformed(evt);
             }
         });
 
@@ -129,7 +157,7 @@ public class GerarVendaView extends javax.swing.JFrame {
                         .addGap(51, 51, 51)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 513, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(30, 30, 30)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnExcluirProd, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(247, 247, 247)
                         .addComponent(jLabel5)))
@@ -146,7 +174,7 @@ public class GerarVendaView extends javax.swing.JFrame {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(87, 87, 87)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnExcluirProd, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(59, Short.MAX_VALUE))
         );
 
@@ -180,13 +208,18 @@ public class GerarVendaView extends javax.swing.JFrame {
 
         txtQtdProd.setEditable(false);
 
-        jButton4.setText("Fechar Venda");
+        btnGerarVenda.setText("Fechar Venda");
+        btnGerarVenda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGerarVendaActionPerformed(evt);
+            }
+        });
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         jLabel6.setText("Valor Total:");
 
-        jTextField2.setEditable(false);
+        txtValorTotal.setEditable(false);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -196,7 +229,7 @@ public class GerarVendaView extends javax.swing.JFrame {
                 .addGap(105, 105, 105)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel6)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtValorTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -205,7 +238,7 @@ public class GerarVendaView extends javax.swing.JFrame {
                 .addGap(25, 25, 25)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtValorTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(24, Short.MAX_VALUE))
         );
 
@@ -259,7 +292,7 @@ public class GerarVendaView extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnGerarVenda, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(42, 42, 42)
                         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -313,7 +346,7 @@ public class GerarVendaView extends javax.swing.JFrame {
                         .addGap(84, 84, 84)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnGerarVenda, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -347,14 +380,84 @@ public class GerarVendaView extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNmClienteActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void btnExcluirProdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExcluirProdActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
+        int indexRow = tProdutosVenda.getSelectedRow();
+
+        if(indexRow != -1){
+            DefaultTableModel model = (DefaultTableModel) tProdutosVenda.getModel();
+            model.removeRow(indexRow);
+            
+            //Recalcula os valores
+            calcularValorTotal();
+            
+            JOptionPane.showMessageDialog(this, "Exclusão concluida");
+        }else{
+            JOptionPane.showMessageDialog(this, "Erro ao excluir", "Title", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnExcluirProdActionPerformed
 
     private void btnAdicionarProdVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdicionarProdVendaActionPerformed
         // TODO add your handling code here:
+        String idProduto = txtCodProd.getText();
+        String produto = txtNmProd.getText();
+        String quantidade = txtQtdProd.getText();
+        String valorUnitario = txtValorProd.getText();
+
+        if (produto.isEmpty() || quantidade.isEmpty() || valorUnitario.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos do produto");
+            return;
+        }
+
+        double valorTotal = Double.parseDouble(quantidade) * Double.parseDouble(valorUnitario);
+        model.addRow(new Object[] { idProduto, produto, quantidade, valorUnitario, valorTotal });
+        
+        txtCodProd.setText("");
+        txtNmProd.setText("");
+        txtQtdProd.setText("");
+        txtValorProd.setText("");
+
+        calcularValorTotal();
         
     }//GEN-LAST:event_btnAdicionarProdVendaActionPerformed
+
+    private void btnGerarVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGerarVendaActionPerformed
+        // TODO add your handling code here:
+        
+        try{
+           DefaultTableModel model = (DefaultTableModel) tProdutosVenda.getModel();
+           List<VendaProduto> itensVenda = new ArrayList<>();
+           Venda venda = new Venda();
+           
+           if(Double.parseDouble(txtValorTotal.getText()) > 0){
+                              
+              
+               for(int i = 0; i < model.getRowCount(); i++){
+                     int idProduto = Integer.parseInt(model.getValueAt(i, 0).toString());
+                    int quantidade = Integer.parseInt(model.getValueAt(i, 2).toString());
+                    BigDecimal valorUnitario = BigDecimal.valueOf(Double.parseDouble(model.getValueAt(i, 3).toString())) ;
+
+                    VendaProduto vendaProduto = new VendaProduto();
+                    vendaProduto.setId_produto(idProduto);
+                    vendaProduto.setValor_unitario(valorUnitario);
+                    vendaProduto.setQuantidade(quantidade);
+                   
+                    itensVenda.add(vendaProduto);
+               }
+               
+               venda.setItens(itensVenda);
+               venda.setId_cliente(Integer.parseInt(txtIdCliente.getText()));
+               venda.setData_venda(new java.sql.Date(System.currentTimeMillis()));
+               venda.setValor_total(BigDecimal.valueOf(Double.parseDouble(txtValorTotal.getText())));
+               
+               
+               VendaDAO.gerarVenda(venda);
+           }
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(this, "Nenhum produto adicionado", "title", JOptionPane.ERROR_MESSAGE);
+        }
+
+    }//GEN-LAST:event_btnGerarVendaActionPerformed
     
     public void setTxtNmCliente(String nomeCliente) {
         this.txtNmCliente.setText(nomeCliente);
@@ -426,9 +529,9 @@ public class GerarVendaView extends javax.swing.JFrame {
     private javax.swing.JButton btnAddCliente;
     private javax.swing.JButton btnAddProduto;
     private javax.swing.JButton btnAdicionarProdVenda;
+    private javax.swing.JButton btnExcluirProd;
+    private javax.swing.JButton btnGerarVenda;
     private javax.swing.JButton btnVoltar;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -442,7 +545,6 @@ public class GerarVendaView extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTextField jTextField2;
     private javax.swing.JTable tProdutosVenda;
     private javax.swing.JTextField txtCodProd;
     private javax.swing.JTextField txtIdCliente;
@@ -450,5 +552,6 @@ public class GerarVendaView extends javax.swing.JFrame {
     private javax.swing.JTextField txtNmProd;
     private javax.swing.JTextField txtQtdProd;
     private javax.swing.JTextField txtValorProd;
+    private javax.swing.JTextField txtValorTotal;
     // End of variables declaration//GEN-END:variables
 }

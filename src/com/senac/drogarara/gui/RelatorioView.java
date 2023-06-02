@@ -5,10 +5,28 @@
 package com.senac.drogarara.gui;
 
 
+import com.senac.drogarara.DAO.VendaDAO;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JOptionPane;
+import javax.swing.JOptionPane;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.ArrayList;
+import com.senac.drogarara.model.Venda;
+import com.senac.drogarara.model.Cliente;
+import com.senac.drogarara.DAO.ProdutoDAO;
+import com.senac.drogarara.DAO.ClienteDAO;
+import java.math.BigDecimal;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -21,6 +39,7 @@ public class RelatorioView extends javax.swing.JFrame {
      */
     public RelatorioView() {
         initComponents();
+        setResizable(false);
     }
 
     /**
@@ -37,9 +56,9 @@ public class RelatorioView extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tListaVendas = new javax.swing.JTable();
         jLabel4 = new javax.swing.JLabel();
-        txtValorTotal = new javax.swing.JTextField();
+        txtValorTotalPeriodo = new javax.swing.JTextField();
         btnVoltar = new javax.swing.JButton();
         btnDetalhe = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
@@ -56,7 +75,7 @@ public class RelatorioView extends javax.swing.JFrame {
 
         jLabel3.setText("até: ");
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tListaVendas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -64,10 +83,10 @@ public class RelatorioView extends javax.swing.JFrame {
                 {null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "ID Venda", "Valor total", "Data", "Cliente"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tListaVendas);
 
         jLabel4.setText("Valor total do período:");
 
@@ -79,6 +98,11 @@ public class RelatorioView extends javax.swing.JFrame {
         });
 
         btnDetalhe.setIcon(new javax.swing.ImageIcon("/home/david/Vídeos/detailBtnNaoTaoSmall.png")); // NOI18N
+        btnDetalhe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDetalheActionPerformed(evt);
+            }
+        });
 
         btnFiltrarData.setIcon(new javax.swing.ImageIcon("/home/david/Vídeos/smallSFIlter.png")); // NOI18N
         btnFiltrarData.setMaximumSize(new java.awt.Dimension(199, 134));
@@ -126,20 +150,20 @@ public class RelatorioView extends javax.swing.JFrame {
                                 .addComponent(btnFiltrarData, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 252, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 630, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(105, 105, 105))
                                 .addGroup(layout.createSequentialGroup()
                                     .addComponent(jLabel4)
                                     .addGap(18, 18, 18)
-                                    .addComponent(txtValorTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtValorTotalPeriodo, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 311, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addGap(718, 718, 718)
+                                    .addGap(85, 85, 85)
                                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(btnDetalhe, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(btnVoltar, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 630, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(105, 105, 105))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(btnDetalhe, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(btnVoltar, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                         .addGap(35, 35, 35))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel1)
@@ -175,7 +199,7 @@ public class RelatorioView extends javax.swing.JFrame {
                         .addGap(28, 28, 28)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
-                            .addComponent(txtValorTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtValorTotalPeriodo, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnVoltar)
                         .addContainerGap())))
@@ -219,12 +243,45 @@ public class RelatorioView extends javax.swing.JFrame {
         if (dataInicio.after(dataFim)) {
             erro = true;
             JOptionPane.showMessageDialog(this, "A data de início não pode ser maior que a data de fim", "Erro", JOptionPane.ERROR_MESSAGE);
-        } else {
+        } else {//Caso as datas estejam corretas
             JOptionPane.showMessageDialog(this, "As datas estão corretas", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            List<Venda> vendaList = VendaDAO.buscarVendasPorPeriodo(dataInicio, dataFim);
+            DefaultTableModel model = new DefaultTableModel(new Object[]{"ID Venda", "Valor Total", "Data", "Cliente"}, 0);
+            BigDecimal vlTotalPeriodo = BigDecimal.ZERO;
+            final BigDecimal[] total = {vlTotalPeriodo}; // Criar uma variável final
+
+            
+            vendaList.forEach(venda -> {
+                Cliente c = ClienteDAO.consClienteId(venda.getId_cliente());
+                total[0] = total[0].add(venda.getValor_total()); // Atualizar o valor da variável final
+
+                Object[] row = new Object[]{venda.getId_venda(), venda.getValor_total(), venda.getData_venda(), c.getNome()};
+                model.addRow(row);
+            });
+            
+            vlTotalPeriodo = total[0]; // Atribuir o valor final à variável original
+            txtValorTotalPeriodo.setText(String.valueOf(vlTotalPeriodo));
+            
+            tListaVendas.setModel(model);
+            
         }
         
         
     }//GEN-LAST:event_btnFiltrarDataActionPerformed
+
+    private void btnDetalheActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDetalheActionPerformed
+        // TODO add your handling code here:
+        int selectedRow = tListaVendas.getSelectedRow();
+        if (selectedRow != -1) {
+            int idVenda = (int) tListaVendas.getValueAt(selectedRow, 0);
+
+            // Chamar o JFrame DetalheVendaRelatorio passando o ID da venda como parâmetro
+            DetalheVendaRelatorioView detalheVenda = new DetalheVendaRelatorioView(idVenda);
+            detalheVenda.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Nenhuma venda selecionada.", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnDetalheActionPerformed
 
     /**
      * @param args the command line arguments
@@ -279,9 +336,9 @@ public class RelatorioView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable tListaVendas;
     private javax.swing.JFormattedTextField txtDtFim;
     private javax.swing.JFormattedTextField txtDtInicio;
-    private javax.swing.JTextField txtValorTotal;
+    private javax.swing.JTextField txtValorTotalPeriodo;
     // End of variables declaration//GEN-END:variables
 }

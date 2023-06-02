@@ -11,8 +11,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.ArrayList;
+import com.senac.drogarara.model.Produto;
+import com.senac.drogarara.DAO.ProdutoDAO;
+import java.util.List;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -26,6 +31,7 @@ public class ProdutoFormView extends javax.swing.JFrame {
      */
     public ProdutoFormView() {
         initComponents();
+        setResizable(false);
     }
 
     /**
@@ -208,6 +214,9 @@ public class ProdutoFormView extends javax.swing.JFrame {
         boolean contemNumeros = false;
         boolean erro = false;
 
+        //String para consulta do cliente
+        String consultaNome = txtConsNome.getText();
+
         if (!txtConsNome.getText().isEmpty()) {
             for (int i = 0; i < txtConsNome.getText().length(); i++) {
                 if (Character.isDigit(txtConsNome.getText().charAt(i))) {
@@ -225,40 +234,19 @@ public class ProdutoFormView extends javax.swing.JFrame {
             erro = true;
         }
 
-        //ESTRUTURA COM O BANCO
-        try (Connection con = Conexao.getConexao(); PreparedStatement stm = con.prepareStatement("SELECT id_produto, nome, quantidade_estoque, categoria, valor, descricao FROM Produto WHERE nome LIKE ?")) {
-            stm.setString(1, txtConsNome.getText());
-
-            // Executar a consulta SQL e obter os resultados
-            ResultSet rs = stm.executeQuery();
-
-            // Criar um objeto DefaultTableModel para armazenar os dados do JTable
+        //Caso a pesquisa esteja dentro das validações
+        if (erro == false) {
+            List<Produto> produtoList = new ArrayList<>();
             DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nome", "QTD Estoque", "Categoria", "Valor", "Descrição"}, 0);
 
-            // Preencher o modelo com os dados da consulta
-            while (rs.next()) {
-                int id = rs.getInt("id_produto");
-                String nome = rs.getString("nome");
-                int quantidadeEstoque = rs.getInt("quantidade_estoque");
-                String categoria = rs.getString("categoria");
-                String valor = rs.getString("valor");
-                String descricao = rs.getString("descricao");
+            produtoList = ProdutoDAO.consultaProdutoNome(consultaNome);
 
-                Object[] row = new Object[]{id, nome, quantidadeEstoque, categoria, valor, descricao};
+            produtoList.forEach(p -> {
+                Object[] row = new Object[]{p.getIdProduto(), p.getNome(), p.getQtdEstoque(), p.getCategoria(), p.getValor(), p.getDescricao()};
                 model.addRow(row);
-            }
+            });
 
-            // Fechar os objetos ResultSet, PreparedStatement e Connection
-            rs.close();
-            stm.close();
-            con.close();
-
-            // Preencher o JTable com o modelo criado
             tListaProdutos.setModel(model);
-
-        } catch (SQLException ex) {
-            Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(this, "Erro ao conectar ao banco de dados!");
         }
 
     }//GEN-LAST:event_btnConsNmActionPerformed
@@ -273,11 +261,11 @@ public class ProdutoFormView extends javax.swing.JFrame {
             erro = true;
             JOptionPane.showMessageDialog(this, "O codigo do produto deve ser um inteiro!", "Title", JOptionPane.ERROR_MESSAGE);
         }
-        
-        if(erro == false){
-            
+
+        if (erro == false) {
+
             //ESTRUTURA COM O BANCO
-        try (Connection con = Conexao.getConexao(); PreparedStatement stm = con.prepareStatement("SELECT id_produto, nome, quantidade_estoque, categoria, valor, descricao FROM Produto WHERE id_produto = ?")) {
+            try (Connection con = Conexao.getConexao(); PreparedStatement stm = con.prepareStatement("SELECT id_produto, nome, quantidade_estoque, categoria, valor, descricao FROM Produto WHERE id_produto = ?")) {
                 stm.setString(1, txtConsCod.getText());
 
                 // Executar a consulta SQL e obter os resultados
@@ -319,45 +307,29 @@ public class ProdutoFormView extends javax.swing.JFrame {
         // TODO add your handling code here:
         // TODO add your handling code here:
         int row = tListaProdutos.getSelectedRow();
-        
+
         if (row >= 0) { // Verificar se uma linha foi selecionada
             // Exibir uma caixa de diálogo para confirmar a exclusão do cliente
-               //ESTRUTURA COM O BANCO
-   
+            //ESTRUTURA COM O BANCO
+
             int option = JOptionPane.showConfirmDialog(this, "Deseja realmente excluir o produto selecionado?", "Confirmação de exclusão", JOptionPane.YES_NO_OPTION);
 
             if (option == JOptionPane.YES_OPTION) { // Verificar se o usuário confirmou a exclusão
-                try {
-                    // Criar uma conexão com o banco de dados
-                    Connection con = Conexao.getConexao();
-                    // Obter o ID do cliente selecionado
-                    int id = (int) tListaProdutos.getValueAt(row, 0);
 
-                    // Escrever a consulta SQL para excluir o cliente com base no ID
-          
-                    // Preparar a consulta SQL
-                    PreparedStatement stm = con.prepareStatement("DELETE FROM Produto WHERE id_produto = ?");
+                int idProduto = (int) tListaProdutos.getValueAt(row, 0);
 
-                    // Preencher o valor do parâmetro da consulta SQL com o ID do cliente selecionado
-                    stm.setInt(1, id);
+                ProdutoDAO.excluirProduto(idProduto);
 
-                    // Executar a consulta SQL
-                    stm.executeUpdate();
+                boolean erroExclusao = false;
 
-                    // Fechar os objetos PreparedStatement e Connection
-                    stm.close();
-                    con.close();
+                erroExclusao = ProdutoDAO.excluirProduto(idProduto);
 
-                    // Remover a linha selecionada do JTable
+                if (erroExclusao == false) {
                     DefaultTableModel model = (DefaultTableModel) tListaProdutos.getModel();
                     model.removeRow(row);
-
-                    JOptionPane.showMessageDialog(this, "Produto excluído com sucesso.");
-
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erro ao excluir o produto: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(this, "Brinquedo excluído com sucesso.");
                 }
+
             }
         } else {
             JOptionPane.showMessageDialog(this, "Selecione um produto para excluir.");
@@ -366,9 +338,21 @@ public class ProdutoFormView extends javax.swing.JFrame {
 
     private void btnAtualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAtualizarActionPerformed
         // TODO add your handling code here:
-        DetalheProdutoView dpv = new DetalheProdutoView();
-        this.dispose();
-        dpv.setVisible(true);
+        // TODO add your handling code here:
+        
+        int rowIndex = tListaProdutos.getSelectedRow();
+        
+        if(rowIndex != -1){
+            // Obtém os dados da linha selecionada
+            Object[] rowData = new Object[tListaProdutos.getColumnCount()];
+            for (int i = 0; i < tListaProdutos.getColumnCount(); i++) {
+                    rowData[i] = tListaProdutos.getValueAt(rowIndex, i);
+            }
+            
+            // Abre o formulário de edição com os dados da linha selecionada
+            AtualizarProdutoView atualizarProdutoView = new AtualizarProdutoView(rowData);
+            this.dispose();
+        }
     }//GEN-LAST:event_btnAtualizarActionPerformed
 
     /**

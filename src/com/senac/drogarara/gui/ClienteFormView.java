@@ -14,6 +14,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.senac.drogarara.model.Cliente;
+import com.senac.drogarara.DAO.ClienteDAO;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -27,6 +31,7 @@ public class ClienteFormView extends javax.swing.JFrame {
      */
     public ClienteFormView() {
         initComponents();
+        setResizable(false);
     }
 
     /**
@@ -56,7 +61,7 @@ public class ClienteFormView extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Nome", "CPF", "Endereço", "Telefone", "Email"
+                "ID", "Nome", "CPF", "Endereço", "Telefone", "Email", "Sexo", "Dt Nascimento", "Estado Civil"
             }
         ));
         jScrollPane1.setViewportView(tListaClientes);
@@ -170,9 +175,20 @@ public class ClienteFormView extends javax.swing.JFrame {
 
     private void btnAtualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAtualizarActionPerformed
         // TODO add your handling code here:
-        DetalheClienteView dcv = new DetalheClienteView();
-        this.dispose();
-        dcv.setVisible(true);
+        
+        int rowIndex = tListaClientes.getSelectedRow();
+        
+        if(rowIndex != -1){
+            // Obtém os dados da linha selecionada
+            Object[] rowData = new Object[tListaClientes.getColumnCount()];
+            for (int i = 0; i < tListaClientes.getColumnCount(); i++) {
+                    rowData[i] = tListaClientes.getValueAt(rowIndex, i);
+            }
+            
+            // Abre o formulário de edição com os dados da linha selecionada
+            AtualizarClienteView atualizarClienteView = new AtualizarClienteView(rowData);
+            this.dispose();
+        }
     }//GEN-LAST:event_btnAtualizarActionPerformed
 
     private void btnVoltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoltarActionPerformed
@@ -189,48 +205,26 @@ public class ClienteFormView extends javax.swing.JFrame {
         try{
             
             long cpf = Long.parseLong(txtConsultaCpf.getText());
-      
+            List<Cliente> clienteList = new ArrayList<>();
+            DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "Endereço", "Telefone", "Email", "Sexo", "Dt Nascimento", "Estado Civil"}, 0);
+            
+            
+            clienteList = ClienteDAO.consultarCliente(cpf);
+                                    
+            //Para cada cliente retornado
+            clienteList.forEach(cliente ->{
+                Object[] row = new Object[]{cliente.getIdCliente(), cliente.getNome(), cliente.getCpf(), cliente.getEndereco(), cliente.getTelefone(), cliente.getEmail(), cliente.getSexo(), cliente.getDtNascimento(), cliente.getEstadoCivil()};
+                //Adiciono a tabela modelo
+                model.addRow(row);
+            
+            });
+            
+            tListaClientes.setModel(model);
+                
         }catch(NumberFormatException ex){
             JOptionPane.showMessageDialog(this, "No campo CPF , devem ser inseridos somente numeros");
         }
-            
-        //ESTRUTURA COM O BANCO
-    try (Connection con = Conexao.getConexao();
-            
-        PreparedStatement stm = con.prepareStatement("SELECT id_cliente, nome, cpf, endereco, telefone, email FROM Cliente WHERE cpf = ?")) {
-        stm.setLong(1, Long.parseLong(txtConsultaCpf.getText()));
-        
-        // Executar a consulta SQL e obter os resultados
-        ResultSet rs = stm.executeQuery();
-        
-        // Criar um objeto DefaultTableModel para armazenar os dados do JTable
-        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "Endereço", "Telefone", "Email"}, 0);
-        
-        // Preencher o modelo com os dados da consulta
-        while (rs.next()) {
-            int id = rs.getInt("id_cliente");
-            String nome = rs.getString("nome");
-            long cpf = rs.getLong("cpf");
-            String endereco = rs.getString("endereco");
-            String telefone = rs.getString("telefone");
-            String email = rs.getString("email");
-
-            Object[] row = new Object[]{id, nome, cpf, endereco, telefone, email};
-            model.addRow(row);
-        }
-        
-        // Fechar os objetos ResultSet, PreparedStatement e Connection
-        rs.close();
-        stm.close();
-        con.close();
-        
-        // Preencher o JTable com o modelo criado
-        tListaClientes.setModel(model);
-        
-    } catch (SQLException ex) {
-        Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
-        JOptionPane.showMessageDialog(this, "Erro ao conectar ao banco de dados!");
-    }
+    
         
     }//GEN-LAST:event_btnSearchActionPerformed
 
@@ -245,37 +239,21 @@ public class ClienteFormView extends javax.swing.JFrame {
             int option = JOptionPane.showConfirmDialog(this, "Deseja realmente excluir o cliente selecionado?", "Confirmação de exclusão", JOptionPane.YES_NO_OPTION);
 
             if (option == JOptionPane.YES_OPTION) { // Verificar se o usuário confirmou a exclusão
-                try {
-                    // Criar uma conexão com o banco de dados
-                    Connection con = Conexao.getConexao();
+            
                     // Obter o ID do cliente selecionado
                     int id = (int) tListaClientes.getValueAt(row, 0);
+                    
+                    boolean erroExclusao = false;
+                    
+                    ClienteDAO.excluirCliente(id);
 
-                    // Escrever a consulta SQL para excluir o cliente com base no ID
-          
-                    // Preparar a consulta SQL
-                    PreparedStatement stm = con.prepareStatement("DELETE FROM Cliente WHERE id_cliente = ?");
+                    if (erroExclusao == false) {
+                        DefaultTableModel model = (DefaultTableModel) tListaClientes.getModel();
+                        model.removeRow(row);
+                        JOptionPane.showMessageDialog(this, "Brinquedo excluído com sucesso.");
 
-                    // Preencher o valor do parâmetro da consulta SQL com o ID do cliente selecionado
-                    stm.setInt(1, id);
-
-                    // Executar a consulta SQL
-                    stm.executeUpdate();
-
-                    // Fechar os objetos PreparedStatement e Connection
-                    stm.close();
-                    con.close();
-
-                    // Remover a linha selecionada do JTable
-                    DefaultTableModel model = (DefaultTableModel) tListaClientes.getModel();
-                    model.removeRow(row);
-
-                    JOptionPane.showMessageDialog(this, "Cliente excluído com sucesso.");
-
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Erro ao excluir o cliente: " + ex.getMessage());
-                }
+                    }
+                
             }
         } else {
             JOptionPane.showMessageDialog(this, "Selecione um cliente para excluir.");

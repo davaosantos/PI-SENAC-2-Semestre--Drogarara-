@@ -6,6 +6,7 @@ package com.senac.drogarara.gui;
 
 
 import com.senac.drogarara.conexao.Conexao;
+import com.senac.drogarara.model.Usuario;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import javax.swing.JOptionPane;
@@ -26,6 +27,7 @@ public class LoginFrame extends javax.swing.JFrame {
      */
     public LoginFrame() {
         initComponents();
+        setResizable(false);
     }
 
     /**
@@ -124,12 +126,16 @@ public class LoginFrame extends javax.swing.JFrame {
     String nomeUsuario = txtUsuario.getText();
     String senha = new String(pPassword.getPassword());
     
+    Usuario usuario = new Usuario();
+    usuario.setUsername(nomeUsuario);
+    usuario.setSenha(senha);
+    
     //ESTRUTURA COM O BANCO
     try (Connection con = Conexao.getConexao();
          PreparedStatement stm = con.prepareStatement("SELECT * FROM Usuario WHERE nome_usuario=? AND senha=?")) {
         
-        stm.setString(1, nomeUsuario);
-        stm.setString(2, senha);
+        stm.setString(1, usuario.getUsername());
+        stm.setString(2, usuario.getSenha());
         
         try (ResultSet rs = stm.executeQuery()) {
             if (rs.next()) {

@@ -4,6 +4,15 @@
  */
 package com.senac.drogarara.gui;
 
+import com.senac.drogarara.DAO.VendaDAO;
+import com.senac.drogarara.DAO.VendaProdutosDAO;
+import com.senac.drogarara.DAO.ProdutoDAO;
+import com.senac.drogarara.model.Venda;
+import java.util.List;
+import com.senac.drogarara.model.Produto;
+import com.senac.drogarara.model.Venda_Produto;
+import javax.swing.table.DefaultTableModel;
+
 
 
 /**
@@ -11,12 +20,17 @@ package com.senac.drogarara.gui;
  * @author david
  */
 public class DetalheVendaRelatorioView extends javax.swing.JFrame {
+    
+    private int idVenda;
 
     /**
      * Creates new form DetalheVendaRelatorioView
      */
-    public DetalheVendaRelatorioView() {
+    public DetalheVendaRelatorioView(int idVenda) {
         initComponents();
+        setResizable(false);
+        this.idVenda = idVenda;
+        preencherTabela();
     }
 
     /**
@@ -31,9 +45,9 @@ public class DetalheVendaRelatorioView extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txtIdVenda = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tDetalheRelatorio = new javax.swing.JTable();
         jLabel3 = new javax.swing.JLabel();
         btnVoltar = new javax.swing.JButton();
 
@@ -44,17 +58,22 @@ public class DetalheVendaRelatorioView extends javax.swing.JFrame {
 
         jLabel2.setText("Número da venda:");
 
-        jTextField1.setText("jTextField1");
+        txtIdVenda.setEditable(false);
+        txtIdVenda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtIdVendaActionPerformed(evt);
+            }
+        });
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tDetalheRelatorio.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Produto", "Quantidade", "Valor"
+                "ID", "Produto", "Valor Unitário", "Quantidade"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tDetalheRelatorio);
 
         jLabel3.setText("Itens da venda:");
 
@@ -83,7 +102,7 @@ public class DetalheVendaRelatorioView extends javax.swing.JFrame {
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel2)
                                         .addGap(18, 18, 18)
-                                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(txtIdVenda, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addComponent(jLabel3))
                                 .addGap(255, 255, 255))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 633, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -103,7 +122,7 @@ public class DetalheVendaRelatorioView extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtIdVenda, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -122,6 +141,10 @@ public class DetalheVendaRelatorioView extends javax.swing.JFrame {
         this.setVisible(false);
         rv.setVisible(true);
     }//GEN-LAST:event_btnVoltarActionPerformed
+
+    private void txtIdVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIdVendaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtIdVendaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -158,11 +181,29 @@ public class DetalheVendaRelatorioView extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new DetalheVendaRelatorioView().setVisible(true);
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new DetalheVendaRelatorioView().setVisible(true);
+//            }
+//        });
+    }
+    
+    private void preencherTabela() {
+        
+        txtIdVenda.setText(String.valueOf(idVenda));
+       
+        if (idVenda > 0) {
+            DefaultTableModel model = (DefaultTableModel) tDetalheRelatorio.getModel();
+            model.setRowCount(0);
+            
+            // Preencha a tabela com os valores retornados da pesquisa
+            List<Venda_Produto> vendaProdutos = VendaProdutosDAO.buscarProdutosDaVenda(idVenda);
+            for (Venda_Produto vendaProduto : vendaProdutos) {
+                Produto produto = ProdutoDAO.buscarProdutosPorId(vendaProduto.getId_produto());
+                Object[] row = {produto.getIdProduto(), produto.getNome(),  vendaProduto.getValor_unitario(), vendaProduto.getQuantidade()};
+                model.addRow(row);
             }
-        });
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -172,7 +213,7 @@ public class DetalheVendaRelatorioView extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTable tDetalheRelatorio;
+    private javax.swing.JTextField txtIdVenda;
     // End of variables declaration//GEN-END:variables
 }
