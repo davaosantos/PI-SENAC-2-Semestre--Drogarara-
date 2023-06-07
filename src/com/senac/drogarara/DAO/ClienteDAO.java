@@ -5,7 +5,7 @@
 package com.senac.drogarara.DAO;
 
 import com.senac.drogarara.conexao.Conexao;
-import com.senac.drogarara.gui.LoginFrame;
+import com.senac.drogarara.view.LoginFrame;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;

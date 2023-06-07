@@ -5,7 +5,7 @@
 package com.senac.drogarara.DAO;
 
 import com.senac.drogarara.conexao.Conexao;
-import com.senac.drogarara.gui.LoginFrame;
+import com.senac.drogarara.view.LoginFrame;
 import com.senac.drogarara.model.Produto;
 import javax.swing.JOptionPane;
 import java.sql.Connection;
@@ -46,7 +46,7 @@ public class ProdutoDAO {
             if (rowsAffected > 0) {
                 JOptionPane.showMessageDialog(null, "Produto cadastrado com sucesso");
             } else {
-                JOptionPane.showMessageDialog(null, "Erro ao cadastrar cliente");
+                JOptionPane.showMessageDialog(null, "Erro ao cadastrar produto");
             }
         } catch (SQLException ex) {
             Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -134,7 +134,7 @@ public class ProdutoDAO {
             //Se a query obtiver sucesso
             if (numLinhas > 0) {
                 JOptionPane.showMessageDialog(null, "Produto excluido com sucesso!");
-            } else {
+            }else {
                 booleanExclusao = true;
                 JOptionPane.showMessageDialog(null, "Erro ao processar exclusão");
             }

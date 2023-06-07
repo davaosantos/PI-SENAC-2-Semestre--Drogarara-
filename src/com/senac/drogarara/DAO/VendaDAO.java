@@ -5,7 +5,7 @@
 package com.senac.drogarara.DAO;
 
 import com.senac.drogarara.conexao.Conexao;
-import com.senac.drogarara.gui.LoginFrame;
+import com.senac.drogarara.view.LoginFrame;
 import com.senac.drogarara.model.Venda;
 import com.senac.drogarara.model.VendaProduto;
 import java.math.BigDecimal;
